@@ -9,21 +9,29 @@ from scipy import optimize
 import matplotlib.pyplot as plt
 
 system = sys.argv[1]
-ftime = 800
+ftime = 150
 itimes = [0.9, 0.8, 0.7, 0.6]
 
 unsorted_files = (glob.glob('SLOG_*'))
 files = sorted(unsorted_files, key=lambda x: float(x.split('_')[1]))
 
 #!reading "PARAM.base" file
+title_list = ["T", "COX", "RAN", "ANGLE", "A2"]
 def read_PARAM(param):
     with open(param, 'r') as f:
         mlines = f.readlines()
-    tmp_line = mlines[0].split("#")
-    ang_line = mlines[1].split("#")
-    temperature = tmp_line[1].split("=")[1]
-    angle = ang_line[1].split("=")[1]
-    return temperature.strip(), angle.strip()
+    n = len(mlines)
+    for i in range(n):
+        info_line = mlines[i].split("#")
+        label_line = info_line[1].split("=")
+        #if any(s in label_line[0] for s in title_list):
+        #    print(info_line[1])
+        if (label_line[0] == "T"): temperature = label_line[1].strip()
+        if (label_line[0] == "ANGLE"): angle = label_line[1].strip()
+        if (label_line[0] == "COX"): COX = label_line[1].strip()
+        if (label_line[0] == "RAN"): RAN = label_line[1].strip()
+    return angle,temperature,COX,RAN 
+
 
 #!reading "SLOG.VK" files
 def read(file_name):
@@ -41,7 +49,7 @@ def plot_speed():
     sfig = plt.figure()
     sax=sfig.add_subplot(1,1,1)
     sax.set_title(TITELS)
-    sax.set_xlim(0,300)
+    sax.set_xlim(0,100)
     for f in files:
         labeler=f.split("_")
         t,v = read(f)
@@ -55,8 +63,8 @@ def plot_logspeed():
     logfig = plt.figure()
     logax=logfig.add_subplot(1,1,1)
     logax.set_title(TITELS)
-    logax.set_xlim(0,300)
-    logax.set_ylim(0.01,2)
+    logax.set_xlim(0,100)
+    logax.set_ylim(0.001,2)
     logax.set_yscale("log")
     for f in files:
         labeler=f.split("_")
@@ -142,7 +150,8 @@ def plot_fit_coeff(type,ydata,n):
 #!writting the fitting information
 def write_out(type,ydata,n):
     speeds = np.asarray(speed)
-    out_file = type  + "_" + temp + "_s" + system
+    typer = '{:4.3f}'.format(float(temp))
+    out_file = type  + "_" + typer + "_s" + system
     outarr = np.vstack([speeds,ydata]).T
     np.savetxt(out_file, outarr, delimiter='\t')
 
@@ -168,9 +177,9 @@ for j in range(n):
     tau[i]=tau0; alpha[i]=alpha0; t0[i]=time0
     i+=1
 
-temp, angle = read_PARAM("PARAM.base")
-TITELS = "T = {}, \u03B8 = {}, sys.{}".format(temp, angle,system)
-
+angle,temp,COX,RAN = read_PARAM("PARAM.base")
+#print(angle)
+TITELS = "T={}, \u03B8={}, sys.{},cof={}".format(float(temp),angle,system,COX)
 #!ploting & saving fit coeffs
 for i in [tau, alpha, t0]:
     ilabel = retrieve_name(i)
