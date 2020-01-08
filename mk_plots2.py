@@ -153,7 +153,9 @@ def on_keyboard(event):
     print('saving figure:',fname)
     plt.savefig(fname)
     return
-  else: exit()
+  elif event.key == 'q':
+    exit()
+  else: pass
   print(INDEX,energy_all_modes(INDEX).max(),np.argmax(energy_all_modes(INDEX)))
   plt.clf()
   plt.plot(energy_all_modes(INDEX))
