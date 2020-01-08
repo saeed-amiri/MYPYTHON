@@ -28,12 +28,14 @@ my_parser.add_argument('-id', action='store', type=str, dest="RUNID",
                        required=True)
 my_parser.add_argument('-write', action='store', dest="fmodes", type=str)
 my_parser.add_argument('-plot', action='store', dest="fplots", type=str)
+my_parser.add_argument('-intg', action='store', dest="fintg", type=str)
 
 args = my_parser.parse_args()
 
 RUNID=args.RUNID
 fmodes=args.fmodes
 fplot=args.fplots
+fintg=args.fintg
 
 # read the COLOR file
 def read_colorfile(RUNID):
@@ -117,6 +119,16 @@ else:
 
 plt.legend()
 plt.show()
+if(fintg!=None):
+  if(os.path.exists(fintg)==True):
+    with open(fintg, 'r') as f:
+      for mlines in f:
+        if len(mlines.split())==0:
+          continue
+        intg = np.trapz(energy_vs_time(int(mlines)))
+        print("integral of mode {} is {:.2f}".format(mlines,intg))
+                
+
 
 # return energy of all modes at 'timestep' i
 def energy_all_modes(i):
