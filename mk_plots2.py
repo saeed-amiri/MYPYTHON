@@ -4,7 +4,6 @@
 VERSION: 08.01.2020
 based on mk_plots.py by RV
 '''
-import os
 import argparse
 import matplotlib
 import numpy as np
@@ -82,6 +81,8 @@ def write_energy_vs_time(m):
   out_file=str(m) + "_totalE"
   np.savetxt(out_file,outarr)
 
+# set INDEX for starting point of energy_all_modes
+INDEX = 0
 
 if(fplot!=None):
   if (os.path.exists(fplot)==True):
@@ -90,6 +91,7 @@ if(fplot!=None):
         if len(mlines.split()) == 0:
             continue
         plt.plot(energy_vs_time(int(mlines.strip())),label=mlines.strip())
+        INDEX = int(mlines.strip())
     f.close()
   else:
     print_violet("no such file as ./{} for plot`ing".format(fplot))
@@ -119,14 +121,15 @@ else:
 
 plt.legend()
 plt.show()
+
 if(fintg!=None):
   if(os.path.exists(fintg)==True):
     with open(fintg, 'r') as f:
       for mlines in f:
         if len(mlines.split())==0:
           continue
-        intg = np.trapz(energy_vs_time(int(mlines)))
-        print("integral of mode {} is {:.2f}".format(mlines,intg))
+        intg = np.trapz(energy_vs_time(int(mlines.strip())))
+        print("integral of mode {} is {:.2f}".format(mlines.strip(),intg))
                 
 
 
@@ -143,11 +146,6 @@ def energy_all_modes(i):
   #etot/=etot.max()
   return etot
 
-# set INDEX for starting point
-if len(sys.argv) > 2:
-  INDEX=int(sys.argv[2])
-else: INDEX=0
-
 fig=plt.figure()
 plt.plot(energy_all_modes(INDEX))
 
@@ -160,6 +158,12 @@ def on_keyboard(event):
   elif event.key == 'left':
     INDEX-=1
     if INDEX==-1: INDEX=numframes-1
+  if event.key == 'up':
+    INDEX+=10
+    if INDEX>=numframes: INDEX=0
+  elif event.key == 'down':
+    INDEX-=10
+    if INDEX<=-1: INDEX=numframes-1
   elif event.key == 'w':
     fname = 'FIGURE.' + str(INDEX) + '.png'
     print('saving figure:',fname)
@@ -170,6 +174,7 @@ def on_keyboard(event):
   else: pass
   print(INDEX,energy_all_modes(INDEX).max(),np.argmax(energy_all_modes(INDEX)))
   plt.clf()
+  plt.title(INDEX)
   plt.plot(energy_all_modes(INDEX))
   fig.canvas.draw_idle()
 
