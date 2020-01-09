@@ -24,10 +24,13 @@ my_parser = argparse.ArgumentParser(prog="mk_plots.py",
 # Execute the parse_args() method
 my_parser = argparse.ArgumentParser()
 my_parser.add_argument('-id', action='store', type=str, dest="RUNID",
-                       required=True)
-my_parser.add_argument('-write', action='store', dest="fmodes", type=str)
-my_parser.add_argument('-plot', action='store', dest="fplots", type=str)
-my_parser.add_argument('-intg', action='store', dest="fintg", type=str)
+                       required=True, help="the RUNID")
+my_parser.add_argument('-write', action='store', dest="fmodes", type=str,
+                      help="file with the index of mode to write energy")
+my_parser.add_argument('-plot', action='store', dest="fplots", type=str,
+                      help="file with the index of mode to plot energy")
+my_parser.add_argument('-intg', action='store', dest="fintg", type=str,
+                      help="file to claculate the area under the energy plot")
 
 args = my_parser.parse_args()
 
@@ -83,7 +86,7 @@ def write_energy_vs_time(m):
 
 # set INDEX for starting point of energy_all_modes
 INDEX = 0
-
+#! plot energy of mode vs time
 if(fplot!=None):
   if (os.path.exists(fplot)==True):
     with open(fplot, 'r') as f:
@@ -92,6 +95,7 @@ if(fplot!=None):
             continue
         plt.plot(energy_vs_time(int(mlines.strip())),label=mlines.strip())
         INDEX = int(mlines.strip())
+      plt.xlabel("time"); plt.ylabel("energy")
     f.close()
   else:
     print_violet("no such file as ./{} for plot`ing".format(fplot))
