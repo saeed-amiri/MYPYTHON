@@ -93,8 +93,23 @@ def energy_vs_time(m):
 
 def write_energy_vs_time(m):
   outarr=energy_vs_time(m)
-  out_file=str(m) + "_totalE"
+  if (kick!=None):out_file=kick+"_totalE."+str(m) 
+  else :out_file=str(m) + "_totalE"
   np.savetxt(out_file,outarr)
+
+#https://thispointer.com/python-how-to-move-files-and-directories/
+def moveAllFilesinDir(dstDir):
+  print(dstDir)
+  # Check if both the are directories
+  if (os.path.isdir(dstDir)==True): shutil.rmtree(dstDir)
+  if (os.path.isdir(dstDir)==False): os.mkdir(dstDir)
+  # Iterate over all the files in source directory
+  srcFiles=dstDir+"_totalE"+".*"
+  for filePath in glob.glob(srcFiles):
+    # Move each file to destination Directory
+    print(filePath)
+    shutil.move(filePath, dstDir)
+            
 
 # set INDEX for starting point of energy_all_modes
 INDEX = 0
@@ -125,11 +140,7 @@ if(fmodes!=None):
         if len(mlines.split()) == 0:
             continue
         write_energy_vs_time(int(mlines.strip()))
-        if (kick!=None):
-          if (os.path.exists(kick)==True): 
-            os.rename('./8_totalE', kick) 
-          else: (os.mkdir(kick));os.rename('8_totalE', kick) 
-
+        if (kick!=None): moveAllFilesinDir(kick)
     f.close()
   else:
     print_violet("no such file as ./{} for writing".format(fmodes))
@@ -138,8 +149,6 @@ if(fmodes!=None):
 else:
   for i in range(3):
     write_energy_vs_time(i)
-
-
 
 plt.legend()
 plt.show()
@@ -153,8 +162,6 @@ if(fintg!=None):
         intg = np.trapz(energy_vs_time(int(mlines.strip())))
         print("integral of mode {} is {:.2f}".format(mlines.strip(),intg))
                 
-
-
 # return energy of all modes at 'timestep' i
 def energy_all_modes(i):
   # tmp is the i-th ROW of the 'color' dataframe
