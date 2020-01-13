@@ -8,7 +8,7 @@ import argparse
 import matplotlib
 import numpy as np
 import pandas as pd
-import sys,os,glob,gzip
+import sys,os,glob,gzip,shutil
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle,Rectangle
@@ -16,7 +16,7 @@ from matplotlib.collections import PatchCollection
 from color_print import *
 
 my_parser = argparse.ArgumentParser(prog="mk_plots.py",
-            usage="%(prog)s -id <RUNID> [-w <MODETOWRITE> -p <MODEPLOT>] ",
+            usage="%(prog)s -id <RUNID> [ -k <kick> -w <MODETOWRITE> -p <MODEPLOT>] ",
             description='plot MODES properties',
             epilog="need COLOR.RUNID.gz, MODEINFO",
             prefix_chars="-")
@@ -25,6 +25,8 @@ my_parser = argparse.ArgumentParser(prog="mk_plots.py",
 my_parser = argparse.ArgumentParser()
 my_parser.add_argument('-id', action='store', type=str, dest="RUNID",
                        required=True, help="the RUNID")
+my_parser.add_argument('-kick', action='store', type=str, dest="kick",
+                       required=False, help="the kick velocity")
 my_parser.add_argument('-write', action='store', dest="fmodes", type=str,
                       help="file with the index of mode to write energy")
 my_parser.add_argument('-plot', action='store', dest="fplots", type=str,
@@ -38,17 +40,23 @@ RUNID=args.RUNID
 fmodes=args.fmodes
 fplot=args.fplots
 fintg=args.fintg
+kick=args.kick
 
 # read the COLOR file
 def read_colorfile(RUNID):
-  f='color.'+RUNID+'.gz'
-  print('reading:',f)
+  if (kick!=None): f='color_'+kick+'.'+RUNID+'.gz'; print_blue(f)
+  else: f='color.'+RUNID+'.gz'; print('reading:',f)
   # read number of eigenmodes = first line of file
   with gzip.open(f) as fp:
-    numpoints = int( fp.readline() )
-    print('number of eigenmodes:',numpoints)
+    nums = (fp.readline()).decode("utf-8")
+    numpoints = int(nums.split(" ")[0]) 
+    nsteps = int(nums.split(" ")[1]) 
+    nprops = int(nums.split(" ")[2]) 
+    print('#eigenmodes: {}, #steps: {}, #prop: {}:'
+          .format(numpoints,nsteps,nprops))
   # read the remaining data 
-  color = pd.read_csv(f,compression='gzip',delim_whitespace=True,skiprows=1,header=None)
+  color = pd.read_csv(f,compression='gzip',delim_whitespace=True,
+                      skiprows=1,header=None)
   # column 0 contains the time step: make this the index
   color=color.set_index(0)
   # make sure index is treated as integer (!)
@@ -66,9 +74,12 @@ def read_colorfile(RUNID):
   # RETURN IT (!)
   return color,numpoints,numframes,nf
 
+
 # read the data
 color,numpoints,numframes,nf=read_colorfile(RUNID)
-modeinfo=np.loadtxt('MODEINFO.'+RUNID).T; freq=modeinfo[0]
+if (kick!=None): fm='MODEINFO_'+kick+'.'+RUNID; print_blue(fm)
+else: fm='MODEINFO.'+RUNID; print(fm)
+modeinfo=np.loadtxt(fm).T; freq=modeinfo[0]
 
 # return energy as function of time for mode m
 def energy_vs_time(m):
@@ -76,7 +87,8 @@ def energy_vs_time(m):
   u = color[nf*m]*freq[m]
   # velocity
   v = color[nf*m+1]
-  # etot = potential + kinetic (note: potential energy = harmonic approximation, not exact)
+  # etot = potential + kinetic 
+  # (note: potential energy = harmonic approximation, not exact)
   return 0.5*(u*u+v*v)
 
 def write_energy_vs_time(m):
@@ -113,6 +125,11 @@ if(fmodes!=None):
         if len(mlines.split()) == 0:
             continue
         write_energy_vs_time(int(mlines.strip()))
+        if (kick!=None):
+          if (os.path.exists(kick)==True): 
+            os.rename('./8_totalE', kick) 
+          else: (os.mkdir(kick));os.rename('8_totalE', kick) 
+
     f.close()
   else:
     print_violet("no such file as ./{} for writing".format(fmodes))
@@ -121,6 +138,7 @@ if(fmodes!=None):
 else:
   for i in range(3):
     write_energy_vs_time(i)
+
 
 
 plt.legend()
