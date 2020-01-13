@@ -33,6 +33,8 @@ my_parser.add_argument('-plot', action='store', dest="fplots", type=str,
                       help="file with the index of mode to plot energy")
 my_parser.add_argument('-intg', action='store', dest="fintg", type=str,
                       help="file to claculate the area under the energy plot")
+my_parser.add_argument('-screen', action='store', dest="screen", type=str,
+                      help="to turn off plt.show() ")
 
 args = my_parser.parse_args()
 
@@ -41,6 +43,7 @@ fmodes=args.fmodes
 fplot=args.fplots
 fintg=args.fintg
 kick=args.kick
+screen=args.screen
 
 # read the COLOR file
 def read_colorfile(RUNID):
@@ -116,11 +119,15 @@ INDEX = 0
 if(fplot!=None):
   if (os.path.exists(fplot)==True):
     with open(fplot, 'r') as f:
+      ModeList=[]
       for mlines in f:
         if len(mlines.split()) == 0:
             continue
-        plt.plot(energy_vs_time(int(mlines.strip())),label=mlines.strip())
-        INDEX = int(mlines.strip())
+        ModeList.append(int(mlines.strip()))
+      ModeList.sort()
+      for m in ModeList:
+        plt.plot(energy_vs_time(m),label=m)
+        INDEX = int(m)
       plt.xlabel("time"); plt.ylabel("energy")
     f.close()
   else:
@@ -150,7 +157,10 @@ else:
     write_energy_vs_time(i)
 
 plt.legend()
-plt.show()
+if (screen!=None):
+  if screen == "off":
+    pass
+else: plt.show()
 
 if(fintg!=None):
   if(os.path.exists(fintg)==True):
@@ -207,5 +217,7 @@ def on_keyboard(event):
 
 
 fig.canvas.mpl_connect('key_press_event',on_keyboard)
-
-plt.show()
+if (screen!=None):
+  if screen == "off": pass
+else: plt.show()
+#plt.show()
