@@ -99,17 +99,16 @@ def write_energy_vs_time(m):
 
 #https://thispointer.com/python-how-to-move-files-and-directories/
 def moveAllFilesinDir(dstDir):
-  print(dstDir)
   # Check if both the are directories
-  if (os.path.isdir(dstDir)==True): shutil.rmtree(dstDir)
+  Path=os.path.abspath('./')
   if (os.path.isdir(dstDir)==False): os.mkdir(dstDir)
   # Iterate over all the files in source directory
   srcFiles=dstDir+"_totalE"+".*"
   for filePath in glob.glob(srcFiles):
     # Move each file to destination Directory
-    print(filePath)
-    shutil.move(filePath, dstDir)
-            
+    if (os.path.exists(os.path.join((Path+"/"+kick+"/"),filePath))):
+      os.remove(os.path.join((Path+"/"+kick+"/"),filePath))
+    shutil.move(os.path.join(Path,filePath),os.path.join(Path,dstDir))
 
 # set INDEX for starting point of energy_all_modes
 INDEX = 0
@@ -185,7 +184,7 @@ def on_keyboard(event):
     INDEX+=1
     if INDEX==numframes: INDEX=0
   elif event.key == 'left':
-    INDEX-=1
+    INDEX-=1 
     if INDEX==-1: INDEX=numframes-1
   if event.key == 'up':
     INDEX+=10
@@ -195,12 +194,11 @@ def on_keyboard(event):
     if INDEX<=-1: INDEX=numframes-1
   elif event.key == 'w':
     fname = 'FIGURE.' + str(INDEX) + '.png'
-    print('saving figure:',fname)
-    plt.savefig(fname)
+    print('saving figure:',fname); plt.savefig(fname)
     return
-  elif event.key == 'q':
-    exit()
+  elif event.key == 'q': exit()
   else: pass
+
   print(INDEX,energy_all_modes(INDEX).max(),np.argmax(energy_all_modes(INDEX)))
   plt.clf()
   plt.title(INDEX)
