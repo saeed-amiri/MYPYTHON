@@ -34,17 +34,30 @@ outfile=args.file
 
 
 # Function to generate 
-start=int(pow(10,N-1))
-end=int(pow(10,(N)))-1
-num = D
+start=int(pow(10,D-1))
+end=int(pow(10,(D)))-1
+num = N
 print("random integer between {} and {}".format(start,end))
+
+def checkDuplication(ListElem):
+    for elem in ListElem:
+        if ListElem.count(elem)>2:
+            return True
+    return False
+
+res = np.zeros(num)
+#res=np.chararray(num)
+
 def Rand(start, end, num): 
-    res = [] 
     for j in range(num): 
-        res.append(random.randint(start, end))
+        res[j] = (random.randint(start, end))
+   #     if (checkDuplication(res.tolist())==True):
+        #print(checkDuplication(res.tolist()))
     return res 
 
 if (outfile!=None):
+    #np.savetxt(outfile,"RAN ")
     res=Rand(start, end, num)
-    np.savetxt(outfile,res,fmt='%d',delimiter='\t')
+    #outfile.write("\n".join(res))
+    np.savetxt(outfile,[res],fmt='%d',newline=" ")
 else : print(Rand(start, end, num))
