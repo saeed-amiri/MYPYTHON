@@ -23,9 +23,9 @@ my_parser = argparse.ArgumentParser(prog="mk_plots.py",
 
 # Execute the parse_args() method
 my_parser = argparse.ArgumentParser()
-my_parser.add_argument('-id', action='store', type=str, dest="RUNID",
+my_parser.add_argument('-id', action='store', dest="RUNID",type=str,
                        required=True, help="the RUNID")
-my_parser.add_argument('-kick', action='store', type=str, dest="kick",
+my_parser.add_argument('-kick', action='store', dest="kick",type=str,
                        required=False, help="the kick velocity")
 my_parser.add_argument('-write', action='store', dest="fmodes", type=str,
                       help="file with the index of mode to write energy")
@@ -35,6 +35,8 @@ my_parser.add_argument('-intg', action='store', dest="fintg", type=str,
                       help="file to claculate the area under the energy plot")
 my_parser.add_argument('-screen', action='store', dest="screen", type=str,
                       help="to turn off plt.show() ")
+my_parser.add_argument('-energy', action='store', dest="efile", type=str,
+                      help="to read energy file")                      
 
 args = my_parser.parse_args()
 
@@ -44,6 +46,22 @@ fplot=args.fplots
 fintg=args.fintg
 kick=args.kick
 screen=args.screen
+efile=args.efile
+
+def get_Eheader(filename):
+  data = pd.read_csv(filename,delim_whitespace=True)  
+  heads=[]
+  for col in data.columns: 
+      heads.append(col)
+  return heads,len(heads)
+    
+def read_lamE(file_name):
+  result=dict()    
+  heads,n=get_Eheader(file_name)
+  df = pd.read_csv(file_name,delim_whitespace=True, skiprows=1,header=None) 
+  for i in range(n):
+      result[i]=np.asarray(df[i])    
+  return result
 
 # read the COLOR file
 def read_colorfile(RUNID):
@@ -77,6 +95,11 @@ def read_colorfile(RUNID):
   # RETURN IT (!)
   return color,numpoints,numframes,nf
 
+if (efile!=None):
+  Eheads, nE = get_Eheader(efile)
+  Energys = read_lamE(efile)
+  for i in range(1,nE):
+    print(Eheads[i],Energys[i][1])
 
 # read the data
 color,numpoints,numframes,nf=read_colorfile(RUNID)
@@ -93,6 +116,9 @@ def energy_vs_time(m):
   # etot = potential + kinetic 
   # (note: potential energy = harmonic approximation, not exact)
   return 0.5*(u*u+v*v)
+def total_energy(m):
+  return sum(energy_vs_time(m))
+
 
 def write_energy_vs_time(m):
   outarr=energy_vs_time(m)
@@ -184,6 +210,7 @@ def energy_all_modes(i):
   #etot/=etot.max()
   return etot
 
+
 fig=plt.figure()
 plt.plot(energy_all_modes(INDEX))
 
@@ -209,7 +236,8 @@ def on_keyboard(event):
   elif event.key == 'q': exit()
   else: pass
 
-  print(INDEX,energy_all_modes(INDEX).max(),np.argmax(energy_all_modes(INDEX)))
+  print(INDEX,energy_all_modes(INDEX).max(),
+        np.argmax(energy_all_modes(INDEX)).max(),total_energy(INDEX))
   plt.clf()
   plt.title(INDEX)
   plt.plot(energy_all_modes(INDEX))
