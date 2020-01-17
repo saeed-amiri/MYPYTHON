@@ -8,8 +8,8 @@ import argparse
 import matplotlib
 import numpy as np
 import pandas as pd
-import sys,os,glob,gzip,shutil
 import matplotlib.cm as cm
+import sys,os,glob,gzip,shutil
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle,Rectangle
 from matplotlib.collections import PatchCollection
@@ -40,13 +40,13 @@ my_parser.add_argument('-energy', action='store', dest="efile", type=str,
 
 args = my_parser.parse_args()
 
-RUNID=args.RUNID
-fmodes=args.fmodes
-fplot=args.fplots
-fintg=args.fintg
-kick=args.kick
-screen=args.screen
-efile=args.efile
+RUNID  = args.RUNID
+fmodes = args.fmodes
+fplot  = args.fplots
+fintg  = args.fintg
+kick   = args.kick
+screen = args.screen
+efile  = args.efile
 
 def get_Eheader(filename):
   data = pd.read_csv(filename,delim_whitespace=True)  
@@ -98,8 +98,6 @@ def read_colorfile(RUNID):
 if (efile!=None):
   Eheads, nE = get_Eheader(efile)
   Energys = read_lamE(efile)
-  for i in range(1,nE):
-    print(Eheads[i],Energys[i][1])
 
 # read the data
 color,numpoints,numframes,nf=read_colorfile(RUNID)
@@ -116,9 +114,26 @@ def energy_vs_time(m):
   # etot = potential + kinetic 
   # (note: potential energy = harmonic approximation, not exact)
   return 0.5*(u*u+v*v)
-def total_energy(m):
-  return sum(energy_vs_time(m))
 
+# return energy of all modes at 'timestep' i
+def energy_all_modes(i):
+  # tmp is the i-th ROW of the 'color' dataframe
+  tmp=np.zeros(numpoints,dtype=float); ke=np.zeros(numpoints,dtype=float)
+  pe =np.zeros(numpoints,dtype=float); ke=np.zeros(numpoints,dtype=float)
+  tmp=np.asarray(color.iloc[i])
+  # kinetic energy
+  ke=tmp[1::nf]; ke=0.5*ke*ke
+  # potential energy
+  pe=tmp[0::nf]*freq; pe=0.5*pe*pe
+  etot=ke+pe
+  #etot=etot[3:]
+  #etot/=etot.max()
+  return etot
+
+
+
+def total_energy(m):
+  return np.sum(energy_all_modes(m))
 
 def write_energy_vs_time(m):
   outarr=energy_vs_time(m)
@@ -197,22 +212,19 @@ if(fintg!=None):
         intg = np.trapz(energy_vs_time(int(mlines.strip())))
         print("integral of mode {} is {:.2f}".format(mlines.strip(),intg))
                 
-# return energy of all modes at 'timestep' i
-def energy_all_modes(i):
-  # tmp is the i-th ROW of the 'color' dataframe
-  tmp=np.asarray(color.iloc[i])
-  # kinetic energy
-  ke=tmp[1::nf]; ke*=0.5*ke
-  # potential energy
-  pe=tmp[0::nf]*freq; pe*=0.5*pe
-  etot=ke+pe
-  etot=etot[3:]
-  #etot/=etot.max()
-  return etot
 
 
 fig=plt.figure()
 plt.plot(energy_all_modes(INDEX))
+
+def Etitle(m):
+  if (efile!=None):
+    etitl = ("t:{},lmp_({}+{}): {:.3f},modeE:{:.3f}"
+            .format(m,Eheads[2],Eheads[1],Energys[2][m]+Energys[1][m],
+              total_energy(m)))
+  else:
+    etitl = str(m)
+  return etitl
 
 # upon keypress, update the colors, or save image, or exit...
 def on_keyboard(event):
@@ -236,10 +248,11 @@ def on_keyboard(event):
   elif event.key == 'q': exit()
   else: pass
 
-  print(INDEX,energy_all_modes(INDEX).max(),
-        np.argmax(energy_all_modes(INDEX)).max(),total_energy(INDEX))
+  print(INDEX,np.amax(energy_all_modes(INDEX)),
+        np.argmax(energy_all_modes(INDEX)))
   plt.clf()
-  plt.title(INDEX)
+  etitl=Etitle(INDEX)
+  plt.title(etitl)
   plt.plot(energy_all_modes(INDEX))
   fig.canvas.draw_idle()
 
