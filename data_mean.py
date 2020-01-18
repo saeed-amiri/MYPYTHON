@@ -73,7 +73,12 @@ def write_out(data,k,heads):
   out=source+'_'+k
   head=' '.join(heads)
   print(head)
-  np.savetxt(out,data.transpose(),fmt='%.18e' ,header=head,delimiter=' ')
+  np.savetxt(out,data.transpose(),fmt='%.18e',
+            header=head,delimiter=' ',comments='')
+  shutil.move(out,'./mean_color')
+
+if (os.path.exists('./mean_color')): pass
+else: os.mkdir('./mean_color')
 
 #-> reading the file which contains the names of directories
 ran_dirs=read_dirs(ran)
@@ -82,6 +87,8 @@ kick_dirs=read_dirs(kick)
 for i in range(len(ran_dirs)): ran_dirs[i]=int(ran_dirs[i])
 for i in range(len(ran_dirs)): ran_dirs[i]=str(ran_dirs[i])
 for i in range(len(kick_dirs)): kick_dirs[i]=str(kick_dirs[i])
+
+
 
 j=0
 for k in (kick_dirs): 
