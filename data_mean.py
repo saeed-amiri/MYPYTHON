@@ -69,9 +69,11 @@ def read_lamE(file_name):
       data[i]=(np.asarray(df[i]))
   return data
 
-def write_out(data,k,Cheads):
+def write_out(data,k,heads):
   out=source+'_'+k
-  np.savetxt(out,data.transpose(),fmt='%.18e',header=Cheads,delimiter=' ',)
+  head=' '.join(heads)
+  print(head)
+  np.savetxt(out,data.transpose(),fmt='%.18e' ,header=head,delimiter=' ')
 
 #-> reading the file which contains the names of directories
 ran_dirs=read_dirs(ran)
