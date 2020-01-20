@@ -38,6 +38,15 @@ start=int(pow(10,D-1))
 end=int(pow(10,(D)))-1
 num = N
 print("random integer between {} and {}".format(start,end))
+#https://stackoverflow.com/questions/31742326/efficient-way-of-reading-integers-from-file
+def read_dirs(list_dir):
+    m = len(list_dir)
+    list_dir = list(dict.fromkeys(list_dir))
+    n = len(list_dir)
+    if (m!=n): print("'{}' in saved', {}' duplicate(s) ignored"
+                    .format(n,m-n))
+    else: print("'{}'random numbers saved".format(n))
+    return list_dir
 
 def checkDuplication(ListElem):
     for elem in ListElem:
@@ -51,13 +60,10 @@ res = np.zeros(num)
 def Rand(start, end, num): 
     for j in range(num): 
         res[j] = (random.randint(start, end))
-   #     if (checkDuplication(res.tolist())==True):
-        #print(checkDuplication(res.tolist()))
     return res 
 
 if (outfile!=None):
-    #np.savetxt(outfile,"RAN ")
     res=Rand(start, end, num)
-    #outfile.write("\n".join(res))
+    res=read_dirs(res)
     np.savetxt(outfile,[res],fmt='%d',newline=" ")
 else : print(Rand(start, end, num))
