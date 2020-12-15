@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 itemp  = [0.032, 0.065, 0.131, 0.262]
 itype  = ['tau*', 't0*', 'alpha*']
 iseed  = ['s1', 's2', 's3', 's4', 's5', 's5b' ]
-itimes = [0.9, 0.8, 0.7, 0.6]
+itimes = [0.9, 0.8, 0.7, 0.6] 
 ntimes = int(len(itimes))
 
 colorlist = ['b', 'r', 'g', 'm', 'y', 'c']
@@ -66,6 +66,7 @@ for t in itype:
     write_ave(ids,temp,vk/llist,bb_ave)
 
 plt.close()
+exit()
 '''
 for i in itype:
     for j in range(ntimes):
