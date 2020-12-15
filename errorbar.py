@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys
+import sys,os
 import glob
 import numpy as np
 import pandas as pd
@@ -66,7 +66,7 @@ for t in itype:
     write_ave(ids,temp,vk/llist,bb_ave)
 
 plt.close()
-exit()
+sys.exit()
 '''
 for i in itype:
     for j in range(ntimes):
