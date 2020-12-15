@@ -34,6 +34,7 @@ zlib.error: Error -3 while decompressing data: invalid code lengths set
 #######################################################################################
 '''
 import sys, os
+import builtins
 from contextlib import contextmanager
 
 @contextmanager
@@ -45,22 +46,24 @@ def open_files(fname, mode):
         f.close()
 
 class ERR():
-    err_list = ["srun: error:", "SyntaxError:", "AttributeError:","ModuleNotFoundError", "FileNotFoundError", "ImportError","IndexError","zlib.error","pandas.errors.",
-                "No such file or directory", "unexpected end of file","violated","Broken pipe"]
+    err_list = [err for err in dir(builtins) if err.endswith("Error")]
+    err_list.extend(["srun: error", "zlib.error", "pandas.errors.",
+                "No such file or directory", "unexpected end of file", "violated", "Broken pipe"])
     def __init__(self, dir):
-        self.err = ' '
+        self.err = []
         fname = dir + '/job.err'
         with open_files(fname, 'r') as f:
             lines = f.readlines()
         for line in lines:
             for err in ERR.err_list:
                if line.startswith(err) or line.endswith(err):
-                    self.err = err
-                    break
-            if len(self.err) > 1: break
+                    self.err.append(err)
+                    #break
+            #if len(self.err) > 1: break
 
 dirs = sys.argv[1:]
 dirs = [dir for dir in dirs if (os.path.exists(dir+'/job.err'))]
+print("NUMBER OF DIRECTORIES: {}".format(len(dirs)))
 for dir in dirs:
     df = ERR(dir)
-    if len(df.err) > 1:  print(dir,df.err)
+    if len(df.err) > 1:  print(dir, set(df.err), len(df.err))
