@@ -51,6 +51,7 @@ def get_param(fname,string):
 
 def closest(array, k): return (np.abs(array - k)).argmin()
 
+
 #fitting function
 def func1(t,coef,eta): return coef * np.exp(-eta * t)
 def func2(t,coef,eta): return coef * np.exp(-eta * t**2) 
