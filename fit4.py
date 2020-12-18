@@ -51,11 +51,14 @@ def get_param(fname,string):
 
 def closest(array, k): return (np.abs(array - k)).argmin()
 
-
 #fitting function
 def func1(t,coef,eta): return coef * np.exp(-eta * t)
 def func2(t,coef,eta): return coef * np.exp(-eta * t**2) 
 def fune(t,a,b,c): return np.max(t) / (c + np.exp(a*(t-b)) )
+def do_fit(x, y):
+    p1,_ = curve_fit(func1, x, y, p0=[0.01,0.0001])
+    p2,_ = curve_fit(func2, x, y, p0=[0.01,0.0001])
+    return p1, p2
 
 class ERR():
     err_list = [err for err in dir(builtins) if err.endswith( "Error")]
@@ -100,7 +103,7 @@ class INIT():
 		def __init__(self,dir):
 			fname = os.path.join(dir, 'INIT.0')
 			with open_file(fname,'r') as f:
-				INIT = list(islice(f, 25))
+				INIT = list(islice(f, 25)) # only first 25 first lines is needed
 			for line in INIT:
 				if line.strip().endswith('atoms'): self.natoms=line.strip().split(' ')[0]
 				if line.strip().endswith('bonds'): self.nbonds=line.strip().split(' ')[0]
@@ -140,12 +143,7 @@ for dir in dirs:
 if err_dirs: dirs = [dir for dir in dirs if dir not in err_dirs]
 print(f'number of dirs: {len(dirs)}')
 
-if len(dirs)==0 : sys.exit(" ERROR! NO DIRECTORY TO READ")
-
-def do_fit(x, y):
-    p1,_ = curve_fit(func1, x, y, p0=[0.01,0.0001])
-    p2,_ = curve_fit(func2, x, y, p0=[0.01,0.0001])
-    return p1, p2
+if len(dirs)==0 : sys.exit("ERROR! NO DIRECTORY TO READ")
 
 def assign_df(df):
 #getting information from all the dirs
@@ -156,7 +154,7 @@ def assign_df(df):
         thermalized.append(dj.thermalized)
         vx0.append(dj.vx0); vy0.append(dj.vy0)
         #fitting
-        p1, p2 = do_fit(dj.argdecay, dj.decay)
+        p1, p2 = do_fit( dj.argdecay, dj.decay)
         coef1.append(p1[0]); eta1.append(p1[1])
         coef2.append(p2[0]); eta2.append(p2[1])
     df['t0'] = t0; df['t1'] = t1; df['decay_time'] = df.t1-df.t0
@@ -164,7 +162,7 @@ def assign_df(df):
     df['thermalized']=thermalized; df['vx0']=vx0; df['vy0']=vy0
     return df
 
-def info_pdf(init,axes):
+def info_pdf(init, axes):
     plt.suptitle('Summary')
     #write in first column
     l1 = [f'Parent dir: {os.getcwd()}',f'Source dir: {init.cwd}',f'Numbers of sub-directories: {len(dirs)}']
@@ -182,6 +180,7 @@ def info_pdf(init,axes):
         if err_dirs and j==0:
             for ii, (ed, ee) in enumerate(zip(err_dirs,err)):
                 axes[0].text(0,height-ii*0.1,f'err_dirs: {ed}\nerr: {ee}')
+
 class DATA():
     def __init__(self):
         #making data frame from all "dir" in "dirs"
