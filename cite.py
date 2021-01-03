@@ -2,11 +2,14 @@
 
 """
 command:
-python cite.py <YOUR_LATEX>.aux
+if you want to creat new "bib" file:
+    python cite.py <YOUR_LATEX>.aux
+if you want to update the "bib" file:
+    python cite.py <YOUR_LATEX>.bib
 output:
 <YOUR_LATEX>.bib
 
-first compile the latex file to produce the .aux file 
+!first compile the latex file to produce the .aux file !
 then run the python command
 then compile the latex file again
 
@@ -149,15 +152,14 @@ class Aux2Url:
         self.book = [isbn for isbn in self.doi_list if isbn.startswith("isbn")]
         #normal journals
         self.journals = [doi for doi in self.doi_list if doi not in self.arxiv or self.book]
-    
-    def check_doi(self) -> list:
-        self.check_journals()
-        #check if "doi" is contain "/" in the "journals"
-        self.journals = [doi for doi in self.doi_list if '/' in doi]
-    
+        self.journals = [doi for doi in self.journals if '/' in doi]
+        #if updating "bib" file
+        self.arxiv = [doi for doi in self.arxiv if doi not in arxiv]
+        self.book = [isbn for isbn in self.book if isbn not in book]
+        self.journals = [doi for doi in self.journals if doi not in journals]
+
     def make_url(self) -> list:
         self.check_journals()
-        self.check_doi()
         # make "url" for both:
         self.arxiv = [f'http://export.arxiv.org/api/query?id_list={doi.split(":")[-1]}' for doi in self.arxiv]
         self.journals = [f'http://dx.doi.org/{doi}' for doi in self.journals]
@@ -342,19 +344,57 @@ class Book2Bib:
         for i in bib: 
             print(f'\t{i}')
 
-aux = Aux2Url(sys.argv[1])
-bibfile = sys.argv[1].split('.')[0].__add__('.bib')
-sys.stdout = open(bibfile,'w')
+class READBIB:
+    """
+    Reading excisting 'bib' file to update
+    """
+    def __init__(self, fname) -> None:
+        self.fname = fname
+        del fname
+
+    def read_bib(self) -> list:
+        with open_file(self.fname, 'r') as f:
+            for line in f:
+                if line.startswith('@'):
+                    self.get_id(line)
+
+    def get_id(self,line) -> str:
+        self.line = line
+        self.id = self.line.split("{")[1][:-2].strip()
+        self.get_list(self.id)
+
+    def get_list(self, id) -> list:
+        if id.startswith('arxiv'): arxiv.append(id)
+        elif id.startswith('isbn'): book.append(id)
+        elif '/' in id: journals.append(id)
+        else: pass
+
+    def return_list(self) -> list:
+        self.read_bib()
+        return arxiv, journals, book
+
+source = sys.argv[1].split(".")[0]
+arxiv, journals, book = [],[],[]
+if sys.argv[1].split(".")[1]=='aux':
+    print(f"creating: {source}.bib",file=sys.stderr)
+    bibfile = source.__add__('.bib')
+    sys.stdout = open(bibfile,'w')
+elif sys.argv[1].split(".")[1]=='bib':
+    print(f"updating: {source}.bib",file=sys.stderr)
+    bib = READBIB(sys.argv[1])
+    arxiv, journals, book = bib.return_list()
+    bibfile =sys.argv[1]
+    sys.stdout = open(bibfile,'+a')
+
+aux = Aux2Url(source.__add__('.aux'))
 arxiv, journals, book = aux.make_url()
-bib_header("arxive papers")
+
 for url in arxiv:
     t = Arxiv2bib(url)
     t.__str__()
-bib_header('normal papers')
 for url in journals:
     t = Jour2bib(url)
     t.__str__()
-bib_header("books !!!! MUST CHECK !!!!")
 for isbn in book:
     t = Book2Bib(isbn)
     t.make_dic()
