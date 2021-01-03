@@ -326,8 +326,7 @@ class Book2Bib:
         self.title = self.make_dic()['title']
         return f'{{{pretty_title(self.title)}'
     def cock_strudel(self) -> str:
-        self.isbn = re.sub('}|{','',self.make_dic()["isbn"])
-        return f'@book{{isbn:{self.isbn}'
+        return f'@book{{isbn:{self.isbn},'
     def get_authors(self) -> list:
         self.authors = self.make_dic()['author']
         return f'{{{do_firstname(self.authors)}}},'
@@ -335,6 +334,7 @@ class Book2Bib:
         self.bib = self.make_dic()
         self.bib['author'] = self.get_authors()
         self.bib['title'] = self.get_title()
+        self.bib['isbn'] = f'{{{self.isbn}}},'
         self.bib = [f'{key} = {self.bib[key]}' for key in self.bib]
         self.bib.append("}")
         return self.bib
