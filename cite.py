@@ -257,6 +257,8 @@ class Jour2bib:
         html = self._cit.do_request(url,'journals')
         self.html = html
         self.url = url
+        self.strudel = self.html[0].split("{")[0]
+        # print(self.html, file=sys.stderr)
     
     def make_dic(self) -> dict:
         html = [item.strip() for item in self.html]
@@ -264,7 +266,8 @@ class Jour2bib:
     # make "@article" with "doi" as the label for the bibtex
     def cock_strudel(self) -> str:
         self.doi = re.sub('}','',self.make_dic()["doi"])
-        return f'@article{self.doi}'
+        # self.paper = lambda paper: expression
+        return f'{self.strudel}{self.doi}'
     # change capitalization of the title
     def get_title(self) -> list:
         self.title = self.make_dic()['title']
@@ -278,8 +281,14 @@ class Jour2bib:
         # some papers or jouranls "bibtex" dosent have "url", its easier to make it!
         self.doi = re.sub('{|}|,|"',"",self.make_dic()['doi'])
         self.url = f"https://doi.org/{self.doi}"
-        self.journal=self.make_dic()['journal']
-        return f"{{\href{{{self.url}}}{self.journal}}}"
+        if self.strudel.split("@")[1]=='journal':
+            self.journal=self.make_dic()['journal'] 
+            return f"{{\href{{{self.url}}}{self.journal}}}"
+        else: 
+            self.journal=self.make_dic()['publisher'][:-1]
+            print(self.journal,file=sys.stderr)
+            return f"{{\href{{{self.url}}}{self.journal}}},"
+
     def titlecase(self,s):
         return re.sub(r"[A-Za-z]+('[A-Za-z]+)?", lambda mo: mo.group(0).capitalize(), s)
     # updating the bibtex
@@ -287,11 +296,15 @@ class Jour2bib:
         self.bib = self.make_dic()
         self.bib['author'] = self.get_authors()
         self.bib['title'] = self.get_title()
-        self.bib['journal'] = self.get_hyper_journal()
+        if self.strudel.split("@")[1]=='journal':
+            self.bib['journal'] = self.get_hyper_journal()
+        else:
+            self.bib['publisher'] = self.get_hyper_journal()
         if 'year' in self.bib: 
             year = (re.sub('{|}|,|"','',self.bib['year']))
             self.bib['year'] = f'{{{year}}},'
-        self.bib['month'] = self.titlecase(self.bib['month'])
+        if 'month' in self.bib:
+            self.bib['month'] = self.titlecase(self.bib['month'])
         self.bib = [f'{key} = {self.bib[key]}' for key in self.bib]
         self.bib.append("}")
         return self.bib
