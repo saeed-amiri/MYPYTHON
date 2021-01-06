@@ -89,9 +89,9 @@ def do_firstname(authors) -> list:
     #split the name 
     all=name.split(" ")
     #keep the first letter of all-name beside lastName
-    for part in all[:-1]: author.append(f'{part[0]}. ')
+    for part in all[:-1]: author.append(f'{part[0]}.')
     #apoend the lastName
-    author.append(f'{all[-1]}')
+    author.append(f' {all[-1]}')
     #append the author to the others
     names.append("".join(author))
   if len(names)==1:authors = f'{names[0]}'
@@ -281,12 +281,12 @@ class Jour2bib:
         # some papers or jouranls "bibtex" dosent have "url", its easier to make it!
         self.doi = re.sub('{|}|,|"',"",self.make_dic()['doi'])
         self.url = f"https://doi.org/{self.doi}"
-        if self.strudel.split("@")[1]=='journal':
+        print(self.strudel.split("@")[1],file = sys.stderr)
+        if self.strudel.split("@")[1]=='article':
             self.journal=self.make_dic()['journal'] 
             return f"{{\href{{{self.url}}}{self.journal}}}"
         else: 
             self.journal=self.make_dic()['publisher'][:-1]
-            print(self.journal,file=sys.stderr)
             return f"{{\href{{{self.url}}}{self.journal}}},"
 
     def titlecase(self,s):
@@ -296,7 +296,7 @@ class Jour2bib:
         self.bib = self.make_dic()
         self.bib['author'] = self.get_authors()
         self.bib['title'] = self.get_title()
-        if self.strudel.split("@")[1]=='journal':
+        if self.strudel.split("@")[1]=='article':
             self.bib['journal'] = self.get_hyper_journal()
         else:
             self.bib['publisher'] = self.get_hyper_journal()
@@ -347,7 +347,8 @@ class Book2Bib:
         self.bib = self.make_dic()
         self.bib['author'] = self.get_authors()
         self.bib['title'] = self.get_title()
-        self.bib['isbn'] = f'{{{self.isbn}}},'
+        self.bib['publisher']=f"{self.bib['publisher']},"
+        self.bib['note'] = f'{{ISBN: {self.isbn}}},'
         self.bib = [f'{key} = {self.bib[key]}' for key in self.bib]
         self.bib.append("}")
         return self.bib
