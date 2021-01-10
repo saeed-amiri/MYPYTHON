@@ -45,15 +45,18 @@ for others examples:
 One modual should be installed for the books' bib: "isbnlib" [https://pypi.org/project/isbnlib/]
     use pip:
         pip install isbnlib
-
+# updates:
+    - using therad for downloading (now is around 10 times faster!!)
 SAEED AMIRI
 """
-import sys,re,requests
+import sys,re,requests,time,calendar
 from contextlib import contextmanager
+import concurrent.futures
 # moduals for getting books' bibtex, it is easier then using "request"
 from isbnlib import meta
 from isbnlib.registry import bibformatters
-import calendar
+
+start = time.perf_counter()
 
 if len(sys.argv)==1: sys.exit(__doc__)
 
@@ -403,14 +406,22 @@ elif sys.argv[1].split(".")[1]=='bib':
 aux = Aux2Url(source.__add__('.aux'))
 arxiv, journals, book = aux.make_url()
 
-for url in arxiv:
+def get_arxiv (url) :
     t = Arxiv2bib(url)
     t.__str__()
-for url in journals:
+def get_journals (url) :
     t = Jour2bib(url)
     t.__str__()
-for isbn in book:
+def get_book (isbn) :
     t = Book2Bib(isbn)
     t.make_dic()
     t.__str__()
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    j_papers = executor.map(get_journals,journals)
+    x_papers = executor.map(get_arxiv,arxiv)
+    bok_isbn = executor.map(get_book,book)
+    #for result in zip(j_papers,x_papers,bok_isbn):
+    #    print(result)
 sys.stdout = sys.__stdout__
+finish = time.perf_counter()
+print(f'\nDONE IN {finish-start:.3f} second(s)\n')
