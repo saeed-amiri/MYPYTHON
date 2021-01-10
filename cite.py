@@ -115,10 +115,6 @@ def pretty_title(title) -> list:
 def make_dictionary(cite) -> dict:
     return {item.split("=")[0].strip():item.split("=")[1].strip() for item in cite if '=' in item}
 
-def bib_header(w) -> None:
-    print('% ', *['-']*100, sep='')
-    print('% ', *['']*40, w)
-    print('% ', *['-']*100, sep='')
 
 @contextmanager
 def open_file(fname, mode):
@@ -200,7 +196,6 @@ class Arxiv2bib:
         html = self._cit.do_request(url,'arxiv')
         self.html = [item.strip() for item in html]
         self.url = url
-        # print('arXiv', file=sys.stderr)
     def get_eprint(self) -> int:
         return self.url.split("=")[1]
     
@@ -261,7 +256,6 @@ class Jour2bib:
         self.html = html
         self.url = url
         self.strudel = self.html[0].split("{")[0]
-        # print(self.html, file=sys.stderr)
     
     def make_dic(self) -> dict:
         html = [item.strip() for item in self.html]
@@ -284,7 +278,6 @@ class Jour2bib:
         # some papers or jouranls "bibtex" dosent have "url", its easier to make it!
         self.doi = re.sub('{|}|,|"',"",self.make_dic()['doi'])
         self.url = f"https://doi.org/{self.doi}"
-        # print(self.strudel.split("@")[1],file = sys.stderr)
         if self.strudel.split("@")[1]=='article':
             self.journal=self.make_dic()['journal'] 
             return f"{{\href{{{self.url}}}{self.journal}}}"
@@ -311,7 +304,7 @@ class Jour2bib:
         self.bib = [f'{key} = {self.bib[key]}' for key in self.bib]
         self.bib.append("}")
         return self.bib
-    # print bibtes
+    # print bibtex
     def __str__(self) -> str :
         bib = self.update_bib()
         print(self.cock_strudel())
@@ -420,8 +413,6 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
     j_papers = executor.map(get_journals,journals)
     x_papers = executor.map(get_arxiv,arxiv)
     bok_isbn = executor.map(get_book,book)
-    #for result in zip(j_papers,x_papers,bok_isbn):
-    #    print(result)
 sys.stdout = sys.__stdout__
 finish = time.perf_counter()
 print(f'\nDONE IN {finish-start:.3f} second(s)\n')
