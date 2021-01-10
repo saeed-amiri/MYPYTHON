@@ -46,7 +46,7 @@ One modual should be installed for the books' bib: "isbnlib" [https://pypi.org/p
     use pip:
         pip install isbnlib
 # updates:
-    - using therad for downloading (now is around 10 times faster!!)
+    - using thread for downloading (now is around 10 times faster!!)
 SAEED AMIRI
 """
 import sys,re,requests,time,calendar
