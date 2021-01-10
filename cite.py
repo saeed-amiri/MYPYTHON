@@ -180,7 +180,7 @@ class RequestCite:
     def header(self, url, src) -> str:
         self.header = self.jrnl_header if src == 'journals' else self.arx_header
         # self.header = self.jrnl_header if src == 'journals' else self.arx_header
-        print(f"Request for: {url}", end = ' ---> ', file=sys.stderr)
+        print(f"Request for: {url}", file=sys.stderr)
     def do_request(self, url, src) -> str:
         self.header(url, src)
         self.r = requests.get(url,headers=self.header)
@@ -200,7 +200,7 @@ class Arxiv2bib:
         html = self._cit.do_request(url,'arxiv')
         self.html = [item.strip() for item in html]
         self.url = url
-        print('arXiv', file=sys.stderr)
+        # print('arXiv', file=sys.stderr)
     def get_eprint(self) -> int:
         return self.url.split("=")[1]
     
@@ -284,7 +284,7 @@ class Jour2bib:
         # some papers or jouranls "bibtex" dosent have "url", its easier to make it!
         self.doi = re.sub('{|}|,|"',"",self.make_dic()['doi'])
         self.url = f"https://doi.org/{self.doi}"
-        print(self.strudel.split("@")[1],file = sys.stderr)
+        # print(self.strudel.split("@")[1],file = sys.stderr)
         if self.strudel.split("@")[1]=='article':
             self.journal=self.make_dic()['journal'] 
             return f"{{\href{{{self.url}}}{self.journal}}}"
