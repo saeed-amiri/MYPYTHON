@@ -49,7 +49,10 @@ One modual should be installed for the books' bib: "isbnlib" [https://pypi.org/p
     - using thread for downloading (now is around 10 times faster!!)
 SAEED AMIRI
 """
+from multiprocessing import Value
+from pprint import pprint
 import sys,re,requests,time,calendar
+from matplotlib.pyplot import cla, flag
 from contextlib import contextmanager
 import concurrent.futures
 # moduals for getting books' bibtex, it is easier then using "request"
@@ -172,7 +175,8 @@ class RequestCite:
     def __init__(self)-> str:
         self.jrnl_header = {'accept':'application/x-bibtex'}
         self.arx_header = None
-    
+        self.isbn_header = None
+
     def header(self, url, src) -> str:
         self.header = self.jrnl_header if src == 'journals' else self.arx_header
         # self.header = self.jrnl_header if src == 'journals' else self.arx_header
@@ -183,7 +187,7 @@ class RequestCite:
         if self.r.ok :
             self.r.encoding = 'utf-8'
             #return the text as a list
-            return self.r.text.split('\n')
+            return self.r.text
         else: 
             sys.exit(f'Wrong "{url}" or Busy server')
 
@@ -193,7 +197,7 @@ class Arxiv2bib:
     """
     def __init__(self, url) -> list:
         self._cit = RequestCite()
-        html = self._cit.do_request(url,'arxiv')
+        html = self._cit.do_request(url,'arxiv').split('\n')
         self.html = [item.strip() for item in html]
         self.url = url
     def get_eprint(self) -> int:
@@ -252,7 +256,7 @@ class Jour2bib:
     """
     def __init__(self, url) -> None:
         self._cit = RequestCite()
-        html = self._cit.do_request(url,'journals')
+        html = self._cit.do_request(url,'journals').split('\n')
         self.html = html
         self.url = url
         self.strudel = self.html[0].split("{")[0]
@@ -354,7 +358,7 @@ class Book2Bib:
         for i in bib: 
             print(f'\t{i}')
 
-class READBIB:
+class ReadBib:
     """
     Reading excisting 'bib' file to update
     """
@@ -383,6 +387,62 @@ class READBIB:
         self.read_bib()
         return arxiv, journals, book
 
+import json
+class Isbn2bib:
+    """
+    getting books bibtex from "https://www.googleapis.com/"
+
+    """
+    def __init__(self,isbn) -> None:
+        self.isbn = isbn
+        self.fields = ['authors', 'editor', 'title', 'chapter', 'publisher', 'year', 'subtitle'
+                     'volume', 'number', 'series', 'address', 'edition', 'month', 'note','infoLink','publishedDate']
+        self.dirt = ['authors','infoLink','publishedDate']
+        del isbn
+    
+    def cock_strudel(self) -> str:
+        return f'@book{{isbn:{self.isbn},'
+
+    def get_bib(self):
+        self.url = f'https://www.googleapis.com/books/v1/volumes?q=isbn:{self.isbn}'
+        self._cite = RequestCite()
+        obj = self._cite.do_request(url=self.url,src='isbn')
+        text = json.loads(obj)
+        self.bib = self.update_bib(text['items'][0]['volumeInfo'])
+        return self.bib 
+
+    def update_bib(self,text) -> dict:
+        self.bib = {key:value for (key,value) in text.items() if key in self.fields}
+        # solving Ashcroft bibtex problem 
+        Ashcroft=0
+        for i in range(len(self.bib['authors'])):
+            word = (self.bib['authors'][i].split(' '))
+            if 'Ashcroft' in word: Ashcroft =1
+        self.bib['author']=do_firstname(str(self.bib['authors'])) if Ashcroft==0  else do_firstname(str(self.bib['authors'][1:]))
+        self.bib['year']=self.bib['publishedDate']
+        self.bib['url']=self.bib['infoLink']
+        self.bib['note']=f"\href{{{self.bib['url']}}}{{ISBN:{self.isbn}}}"
+        for key in self.dirt: self.bib.pop(key,None)
+        return self.bib
+
+    def make_bib(self) -> dict:
+        self.get_bib()
+        self.bib = [f'{key} = {{{self.bib[key]}}}' for key in self.bib]
+        return self.bib
+
+    def __str__(self) -> str:
+        try:
+            bib = self.make_bib()
+            print(self.cock_strudel())
+            for i,item in enumerate(bib):
+                print('\t',item.__add__(',')) if i!=len(bib)-1 else print('\t',item)
+            print("\t}")
+        except:
+            b = Book2Bib(self.isbn)
+            b.__str__()
+
+
+
 source = sys.argv[1].split(".")[0]
 arxiv, journals, book = [],[],[]
 if sys.argv[1].split(".")[1]=='aux':
@@ -391,7 +451,7 @@ if sys.argv[1].split(".")[1]=='aux':
     sys.stdout = open(bibfile,'w')
 elif sys.argv[1].split(".")[1]=='bib':
     print(f"updating: {source}.bib",file=sys.stderr)
-    bib = READBIB(sys.argv[1])
+    bib = ReadBib(sys.argv[1])
     arxiv, journals, book = bib.return_list()
     bibfile =sys.argv[1]
     sys.stdout = open(bibfile,'+a')
@@ -406,8 +466,7 @@ def get_journals (url) :
     t = Jour2bib(url)
     t.__str__()
 def get_book (isbn) :
-    t = Book2Bib(isbn)
-    t.make_dic()
+    t = Isbn2bib(isbn)
     t.__str__()
 with concurrent.futures.ThreadPoolExecutor() as executor:
     j_papers = executor.map(get_journals,journals)
