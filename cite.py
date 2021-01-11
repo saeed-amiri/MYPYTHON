@@ -51,8 +51,7 @@ SAEED AMIRI
 """
 from multiprocessing import Value
 from pprint import pprint
-import sys,re,requests,time,calendar
-from matplotlib.pyplot import cla, flag
+import sys,re,requests,time,calendar,json
 from contextlib import contextmanager
 import concurrent.futures
 # moduals for getting books' bibtex, it is easier then using "request"
@@ -387,7 +386,7 @@ class ReadBib:
         self.read_bib()
         return arxiv, journals, book
 
-import json
+
 class Isbn2bib:
     """
     getting books bibtex from "https://www.googleapis.com/"
@@ -438,6 +437,7 @@ class Isbn2bib:
                 print('\t',item.__add__(',')) if i!=len(bib)-1 else print('\t',item)
             print("\t}")
         except:
+            print("CANT GET",self.isbn,file=sys.stderr)
             b = Book2Bib(self.isbn)
             b.__str__()
 
