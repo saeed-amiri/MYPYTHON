@@ -190,7 +190,7 @@ class RequestCite:
         else: 
             sys.exit(f'Wrong "{url}" or Busy server')
 
-class Arxiv2bib:
+class Arxiv2Bib:
     """
     make a citation like the one from other journlas
     """
@@ -249,7 +249,7 @@ class Arxiv2bib:
             print(f'\t{item}')
         
 
-class Jour2bib:
+class Jour2Bib:
     """
     modifying bibtex from normal journals
     """
@@ -387,7 +387,7 @@ class ReadBib:
         return arxiv, journals, book
 
 
-class Isbn2bib:
+class Isbn2Bib:
     """
     getting books bibtex from "https://www.googleapis.com/"
 
@@ -460,13 +460,13 @@ aux = Aux2Url(source.__add__('.aux'))
 arxiv, journals, book = aux.make_url()
 
 def get_arxiv (url) :
-    t = Arxiv2bib(url)
+    t = Arxiv2Bib(url)
     t.__str__()
 def get_journals (url) :
-    t = Jour2bib(url)
+    t = Jour2Bib(url)
     t.__str__()
 def get_book (isbn) :
-    t = Isbn2bib(isbn)
+    t = Isbn2Bib(isbn)
     t.__str__()
 with concurrent.futures.ThreadPoolExecutor() as executor:
     j_papers = executor.map(get_journals,journals)
