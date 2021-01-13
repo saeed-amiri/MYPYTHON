@@ -94,7 +94,10 @@ def do_firstname(authors) -> list:
     #split the name 
     all=name.split(" ")
     #keep the first letter of all-name beside lastName
-    for part in all[:-1]: author.append(f'{part[0]}.')
+    for part in all[:-1]: 
+        if part[0].isupper():
+            author.append(f'{part[0]}.')
+        else: author.append(f' {part} ')
     #apoend the lastName
     author.append(f' {all[-1]}')
     #append the author to the others
@@ -111,6 +114,7 @@ def pretty_title(title) -> list:
     title = re.sub('^{','',title)
     title = [item.lower() if not "-" in item else item for item in title.split(" ")]
     title = [f'{{{item}}}' if "-" in item and len(item)>2 else item for item in title]
+    title[-1] = title[-1].strip('.')
     title = [item.capitalize()  if i==0 else item for i,item in enumerate(title)]
     return  " ".join(title)
 
@@ -440,8 +444,6 @@ class Isbn2Bib:
             print("CANT GET",self.isbn,file=sys.stderr)
             b = Book2Bib(self.isbn)
             b.__str__()
-
-
 
 source = sys.argv[1].split(".")[0]
 arxiv, journals, book = [],[],[]
