@@ -396,7 +396,7 @@ class Isbn2Bib:
     """
     def __init__(self,isbn) -> None:
         self.isbn = isbn
-        self.fields = ['authors', 'editor', 'title', 'chapter', 'publisher', 'year', 'subtitle'
+        self.fields = ['authors', 'editor', 'title', 'chapter', 'publisher', 'year', 'subtitle',
                      'volume', 'number', 'series', 'address', 'edition', 'month', 'note','infoLink','publishedDate']
         self.dirt = ['authors','infoLink','publishedDate']
         del isbn
@@ -418,10 +418,12 @@ class Isbn2Bib:
         Ashcroft=0
         for i in range(len(self.bib['authors'])):
             word = (self.bib['authors'][i].split(' '))
-            if 'Ashcroft' in word: Ashcroft =1
+            if 'Ashcroft' in word: Ashcroft=1
         self.bib['author']=do_firstname(str(self.bib['authors'])) if Ashcroft==0  else do_firstname(str(self.bib['authors'][1:]))
         self.bib['year']=self.bib['publishedDate']
         self.bib['url']=self.bib['infoLink']
+        if "subtitle" in self.bib: 
+            self.bib['title']=f"{self.bib['title']}: {pretty_title(self.bib['subtitle'])}"
         self.bib['note']=f"\href{{{self.bib['url']}}}{{ISBN:{self.isbn}}}"
         for key in self.dirt: self.bib.pop(key,None)
         return self.bib
