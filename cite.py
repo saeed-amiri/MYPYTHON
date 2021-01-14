@@ -436,10 +436,10 @@ class Isbn2Bib:
             bib = self.make_bib()
             print(self.cock_strudel())
             for i,item in enumerate(bib):
-                print('\t',item.__add__(',')) if i!=len(bib)-1 else print('\t',item)
+                print(f"\t{item.__add__(',')}") if i!=len(bib)-1 else print(f"\t{item}")
             print("\t}")
         except:
-            print("CANT GET",self.isbn,file=sys.stderr)
+            print(f"CANT GET {self.isbn} FROM GOOGLE API",file=sys.stderr)
             b = Book2Bib(self.isbn)
             b.__str__()
 
