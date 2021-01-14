@@ -49,8 +49,6 @@ One modual should be installed for the books' bib: "isbnlib" [https://pypi.org/p
     - using thread for downloading (now is around 10 times faster!!)
 SAEED AMIRI
 """
-from multiprocessing import Value
-from pprint import pprint
 import sys,re,requests,time,calendar,json
 from contextlib import contextmanager
 import concurrent.futures
@@ -97,7 +95,7 @@ def do_firstname(authors) -> list:
     for part in all[:-1]: 
         if part[0].isupper():
             author.append(f'{part[0]}.')
-        else: author.append(f' {part} ')
+        else: author.append(f' {part}')
     #apoend the lastName
     author.append(f' {all[-1]}')
     #append the author to the others
