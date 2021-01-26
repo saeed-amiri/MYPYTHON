@@ -33,9 +33,12 @@ zlib.error: Error -3 while decompressing data: invalid code lengths set
 
 #######################################################################################
 '''
+from datetime import datetime
 import sys, os
 import builtins
 from contextlib import contextmanager
+import concurrent.futures
+import subprocess
 
 @contextmanager
 def open_files(fname, mode):
@@ -45,7 +48,7 @@ def open_files(fname, mode):
   finally:
     f.close()
 
-class ERR():
+class ERR:
   err_list = [err for err in dir(builtins) if err.endswith("Error")]
   err_list.extend(["srun: error", "zlib.error", "pandas.errors.",
               "No such file or directory", "unexpected end of file", "violated", "Broken pipe"])
@@ -70,8 +73,41 @@ class ERR():
 # get the directories names from consol
 dirs = sys.argv[1:]
 dirs = [dir for dir in dirs if (os.path.exists(dir+'/job.err'))]
-print("NUMBER OF DIRECTORIES: {}".format(len(dirs)))
+# print("NUMBER OF DIRECTORIES: {}".format(len(dirs)))
 
-for dir in dirs:
-  df = ERR(dir)
-  if len( df.get_errors() ) > 1:  print(dir, set( df.get_errors() ), len( df.get_errors() ))
+err_src=[]
+def err(src) -> None:
+  df = ERR(src)
+  if len( df.get_errors() ) > 1: 
+    print(src, set( df.get_errors() ), len( df.get_errors() ))
+    err_src.append(src)
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+  error_job = executor.map(err,dirs)
+
+class GetJobId:
+  def __init__(self,src) -> None:
+    self.src = os.path.join(src, 'job.out')
+
+  def get_id(self) -> int:
+    try:
+      with open_files(self.src, 'r') as f:
+        self.head = [next(f) for x in range(2)]
+      self.id = self.head[1]
+      self.id = self.id.split(" = ")[1].strip()
+      if self.id is not None : return self.id
+    except:
+      pass
+
+def cancel_rm(src) -> None:
+  id = GetJobId(src)
+  subprocess.Popen(['scancel' ,f'{id.get_id()}'])
+  subprocess.Popen(['rm', '-rf', f'{src}'])
+  print(f"JOB {id.get_id()} canceld and dir {src} is removed")
+
+print(f'{len(err_src)} sources faced error(s)')
+
+sys.stdout = open('ERROR','+a')
+print(datetime.now())
+# with concurrent.futures.ThreadPoolExecutor() as executor:
+  # remove_job = executor.map(cancel_rm, err_src)
