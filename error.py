@@ -50,7 +50,7 @@ def open_files(fname, mode):
 
 class ERR:
   err_list = [err for err in dir(builtins) if err.endswith("Error")]
-  err_list.extend(["srun: error", "zlib.error", "pandas.errors.",
+  err_list.extend(["srun: error", "zlib.error", "pandas.errors.","Fatal Python error",
               "No such file or directory", "unexpected end of file", "violated", "Broken pipe"])
 
   def __init__(self, dir):
@@ -95,9 +95,9 @@ class GetJobId:
         self.head = [next(f) for x in range(2)]
       self.id = self.head[1]
       self.id = self.id.split(" = ")[1].strip()
+      # print(self.src, self.id,file=sys.stderr)
       if self.id is not None : return self.id
-    except:
-      pass
+    except: pass
 
 def cancel_rm(src) -> None:
   id = GetJobId(src)
@@ -108,6 +108,6 @@ def cancel_rm(src) -> None:
 print(f'{len(err_src)} sources faced error(s)')
 
 sys.stdout = open('ERROR','+a')
-print(datetime.now())
-# with concurrent.futures.ThreadPoolExecutor() as executor:
-  # remove_job = executor.map(cancel_rm, err_src)
+print(f"\n{datetime.now()}")
+with concurrent.futures.ThreadPoolExecutor() as executor:
+  remove_job = executor.map(cancel_rm, err_src)
