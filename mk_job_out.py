@@ -66,6 +66,7 @@ def make_df(src):
   df.to_csv(job_out,sep='\t')
 
 dirs = sys.argv[1:]
+print(dirs)
 dirs = [d for d in dirs if os.path.exists(os.path.join(d,'job.out'))]
 with concurrent.futures.ThreadPoolExecutor() as executor:
     j = executor.map(make_df,dirs)
