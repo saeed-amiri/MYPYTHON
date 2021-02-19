@@ -113,7 +113,7 @@ def pretty_title(title) -> list:
     # print(title,file=sys.stderr)
     # replacing {\textendash} with real dash "-" !!!
     title = re.sub(r'{\\textendash}','-',title)
-    # lowering the case except the one wich have "-" between them
+    # lowering the cases except the one wich have "-" between them
     title = [item.lower() if not "-" in item else item for item in title.split(" ")]
     title[-1] = title[-1].strip('.')
     # capitalized the first word
