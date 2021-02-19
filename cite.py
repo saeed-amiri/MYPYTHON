@@ -110,11 +110,15 @@ def do_firstname(authors) -> list:
 def pretty_title(title) -> list:
     #seperate the "title" make a list and capitalize them
     title = re.sub('^{','',title)
-    print(title,file=sys.stderr)
+    # print(title,file=sys.stderr)
+    # replacing {\textendash} with real dash "-" !!!
     title = re.sub(r'{\\textendash}','-',title)
+    # lowering the case except the one wich have "-" between them
     title = [item.lower() if not "-" in item else item for item in title.split(" ")]
     title[-1] = title[-1].strip('.')
+    # capitalized the first word
     title = [item.capitalize()  if i==0 else item for i,item in enumerate(title)]
+    # put item with "-" inside curly bracket {} so latex understad it
     title = [f'{{{item}}}' if "-" in item and len(item)>2 else item for item in title]
     return  " ".join(title)
 
