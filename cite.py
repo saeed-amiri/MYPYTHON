@@ -110,10 +110,12 @@ def do_firstname(authors) -> list:
 def pretty_title(title) -> list:
     #seperate the "title" make a list and capitalize them
     title = re.sub('^{','',title)
+    print(title,file=sys.stderr)
+    title = re.sub(r'{\\textendash}','-',title)
     title = [item.lower() if not "-" in item else item for item in title.split(" ")]
-    title = [f'{{{item}}}' if "-" in item and len(item)>2 else item for item in title]
     title[-1] = title[-1].strip('.')
     title = [item.capitalize()  if i==0 else item for i,item in enumerate(title)]
+    title = [f'{{{item}}}' if "-" in item and len(item)>2 else item for item in title]
     return  " ".join(title)
 
 def make_dictionary(cite) -> dict:
@@ -238,7 +240,7 @@ class Arxiv2Bib:
         self._bib = {'title':f'{{{self.get_title()}}},', 
         'author':f'{{{self.get_authors()}}},',
         'year':f'{{{self.get_date()[0]}}},',
-        'month':f'{{{calendar.month_abbr[int(self.get_date()[1])]}}},',
+        'month':f'{{{calendar.month_abbr[int(self.get_date()[1])]}.}},',
         'eprint':f'{{{self.get_eprint()}}},',
         'howpublished':f'{{arXiv}},',
         'note':f'{{\href{{https://arxiv.org/abs/{self.get_eprint()}}}{{{self.get_category()}}}}} '}
@@ -292,9 +294,18 @@ class Jour2Bib:
 
     def titlecase(self,s):
         return re.sub(r"[A-Za-z]+('[A-Za-z]+)?", lambda mo: mo.group(0).capitalize(), s)
+
+    # Some papers' bibtex doesnt have title!!!!!!!!!! 
+    def check_bib(self,bibtext) -> str:
+        check_list=['author','title']
+        for k in check_list:
+            if k not in bibtext.keys():
+                print(f'\n"{k}" is missing for {self.url}\nNot added to the "bib" file',file=sys.stderr)
+
     # updating the bibtex
     def update_bib(self) -> list:
         self.bib = self.make_dic()
+        self.check_bib(self.bib)
         self.bib['author'] = self.get_authors()
         self.bib['title'] = self.get_title()
         if self.strudel.split("@")[1]=='article':
@@ -307,6 +318,7 @@ class Jour2Bib:
         if 'month' in self.bib:
             self.bib['month'] = self.titlecase(self.bib['month'])
         self.bib = [f'{key} = {self.bib[key]}' for key in self.bib]
+
         self.bib.append("}")
         return self.bib
     # print bibtex
