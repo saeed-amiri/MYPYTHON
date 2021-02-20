@@ -311,9 +311,11 @@ class Jour2Bib:
         self.bib = self.make_dic()
         self.check_bib(self.bib)
         self.bib['author'] = self.get_authors()
-        self.bib['title'] = self.get_title()
+        self.bib['title'] = self.get_title().__add__(',')
         if self.strudel.split("@")[1]=='article':
             self.bib['journal'] = self.get_hyper_journal()
+        elif self.strudel.split("@")[1]=='misc':
+            self.bib['note'] = self.get_hyper_journal()
         else:
             self.bib['publisher'] = self.get_hyper_journal()
         if 'year' in self.bib: 
