@@ -316,6 +316,7 @@ class Jour2Bib:
             self.bib['journal'] = self.get_hyper_journal()
         elif self.strudel.split("@")[1]=='misc':
             self.bib['note'] = self.get_hyper_journal()
+            self.bib['title'] = self.bib['title'].__add__(',')
         else:
             self.bib['publisher'] = self.get_hyper_journal()
         if 'year' in self.bib: 
