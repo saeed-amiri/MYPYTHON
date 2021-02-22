@@ -70,6 +70,12 @@ def do_and(authors) -> list:
   return(authors)
 
 def do_firstname(authors) -> list:
+#   print(authors,file=sys.stderr)
+#   authors = re.sub("},$", "",authors)
+  authors = re.sub("{", "",authors,count=1)
+  authors = re.sub(r"{.*?}", " ", authors)
+#   spaces='{\hspace{0.167em}}'
+#   if spaces  in authors: authors = authors.replace(spaces," ")
   #make the names like: "FirstName MidelName(s) LastName" -> "F. M. LastName"
   comma = authors.count(',')-1
   #remove initat and trailing characters, also considering the umlats: \u00C0-\u017F
@@ -100,6 +106,7 @@ def do_firstname(authors) -> list:
     author.append(f' {all[-1]}')
     #append the author to the others
     names.append("".join(author))
+  
   if len(names)==1:authors = f'{names[0]}'
   #joining the name of the authors, if more then 1 by and
   elif len(names)>=2:authors = f'{" and ".join(names)}'
@@ -264,6 +271,7 @@ class Jour2Bib:
     def __init__(self, url) -> None:
         self._cit = RequestCite()
         html = self._cit.do_request(url,'journals').split('\n')
+        # print(html,file=sys.stderr)
         self.html = html
         self.url = url
         self.strudel = self.html[0].split("{")[0]
