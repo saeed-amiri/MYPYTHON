@@ -68,17 +68,28 @@ def do_and(authors) -> list:
     authors=re.sub(' and','{,}',authors,count=and_count-1)
     authors=re.sub(' and','{,} and',authors,count=1)
   return(authors)
-
+from itertools import chain
 def do_firstname(authors) -> list:
 #   print(authors,file=sys.stderr)
 #   authors = re.sub("},$", "",authors)
-  authors = re.sub("{", "",authors,count=1)
-  authors = re.sub(r"{.*?}", " ", authors)
-#   spaces='{\hspace{0.167em}}'
-#   if spaces  in authors: authors = authors.replace(spaces," ")
+#   authors = re.sub("{", "",authors,count=1)
+#   authors = re.sub(r"{.*?}", " ", authors)
+  spaces='{\hspace{0.167em}}'
+  if spaces  in authors: authors = authors.replace(spaces," ")
+#   print(authors,file=sys.stderr)
+#   umlates_curly = ['{\`{a}}', '{\`{e}}', '{\`{i}}', '{\.{I}}', '{\`{o}}', '{\`{u}}']
+#   umlates = [ 'à' ,'è' ,'ı̀' ,'İ' ,'ò' ,'ù']
+#   umlates_curly = {'{\`{a}}':'à', '{\`{e}}':'è', '{\`{i}}':'ı̀', '{\.{I}}':'İ', '{\`{o}}':'ò', '{\`{u}}':'ù'}
+#   print(umlates_curly.keys(),file=sys.stderr)
+#   for i in authors: 
+    #   if i in umlates_curly.keys():
+        #   print(i,file=sys.stderr)
+        #   i=umlates_curly.has_key(i)
+#   for i in authors: print(i,file=sys.stderr)
   #make the names like: "FirstName MidelName(s) LastName" -> "F. M. LastName"
   comma = authors.count(',')-1
   #remove initat and trailing characters, also considering the umlats: \u00C0-\u017F
+#   print(authors,file=sys.stderr)
   authors = re.sub('[^\u00C0-\u017FA-Za-z0-9,]+', ' ', authors)
   #remove "and" and "author" and the trailing "c" from the list for now then will put them back
   #baring the names: rmoving "and"
@@ -102,9 +113,11 @@ def do_firstname(authors) -> list:
         if part[0].isupper():
             author.append(f'{part[0]}.')
         else: author.append(f' {part}')
-    #apoend the lastName
+    # title the lastName
+    all[-1]=all[-1].title()
+    # apoend the lastName
     author.append(f' {all[-1]}')
-    #append the author to the others
+    # append the author to the others
     names.append("".join(author))
   
   if len(names)==1:authors = f'{names[0]}'
