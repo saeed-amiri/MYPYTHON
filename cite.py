@@ -71,26 +71,12 @@ def do_and(authors) -> list:
 from itertools import chain
 def do_firstname(authors) -> list:
 #   print(authors,file=sys.stderr)
-#   authors = re.sub("},$", "",authors)
-#   authors = re.sub("{", "",authors,count=1)
-#   authors = re.sub(r"{.*?}", " ", authors)
   spaces='{\hspace{0.167em}}'
   if spaces  in authors: authors = authors.replace(spaces," ")
-#   print(authors,file=sys.stderr)
-#   umlates_curly = ['{\`{a}}', '{\`{e}}', '{\`{i}}', '{\.{I}}', '{\`{o}}', '{\`{u}}']
-#   umlates = [ 'à' ,'è' ,'ı̀' ,'İ' ,'ò' ,'ù']
-#   umlates_curly = {'{\`{a}}':'à', '{\`{e}}':'è', '{\`{i}}':'ı̀', '{\.{I}}':'İ', '{\`{o}}':'ò', '{\`{u}}':'ù'}
-#   print(umlates_curly.keys(),file=sys.stderr)
-#   for i in authors: 
-    #   if i in umlates_curly.keys():
-        #   print(i,file=sys.stderr)
-        #   i=umlates_curly.has_key(i)
-#   for i in authors: print(i,file=sys.stderr)
-  #make the names like: "FirstName MidelName(s) LastName" -> "F. M. LastName"
   comma = authors.count(',')-1
   #remove initat and trailing characters, also considering the umlats: \u00C0-\u017F
-#   print(authors,file=sys.stderr)
-  authors = re.sub('[^\u00C0-\u017FA-Za-z0-9,]+', ' ', authors)
+#   authors = re.sub('[^\u00C0-\u017FA-Za-z0-9,]+', ' ', authors)
+  authors = authors[1:-2]
   #remove "and" and "author" and the trailing "c" from the list for now then will put them back
   #baring the names: rmoving "and"
   if comma >0:authors=re.sub('( and| and )','',authors)
@@ -104,6 +90,7 @@ def do_firstname(authors) -> list:
   authors=[author.strip() for author in authors if author]
   #doing "FirstName MidelName(s) LastName" -> "F. M1. M2. ... LastName"
   names = []
+#   print(authors,file=sys.stderr)
   for name in authors:
     author=[]
     #split the name 
@@ -112,9 +99,7 @@ def do_firstname(authors) -> list:
     for part in all[:-1]: 
         if part[0].isupper():
             author.append(f'{part[0]}.')
-        else: author.append(f' {part}')
-    # title the lastName
-    all[-1]=all[-1].title()
+        else: author.append(f' {part.title()}')
     # apoend the lastName
     author.append(f' {all[-1]}')
     # append the author to the others
@@ -125,6 +110,7 @@ def do_firstname(authors) -> list:
   elif len(names)>=2:authors = f'{" and ".join(names)}'
   spcial_char_map = {ord('ä'):'\\"a', ord('ü'):'\\"u', ord('ö'):'\\"o', ord('ß'):'\ss'}
   authors = authors.translate(spcial_char_map)
+#   print(authors,file=sys.stderr)
   return do_and(authors)
 
 def pretty_title(title) -> list:
