@@ -92,18 +92,19 @@ def do_firstname(authors) -> list:
   names = []
 #   print(authors,file=sys.stderr)
   for name in authors:
-    author=[]
+    author_name=[]
     #split the name 
     all=name.split(" ")
     #keep the first letter of all-name beside lastName
     for part in all[:-1]: 
         if part[0].isupper():
-            author.append(f'{part[0]}.')
-        else: author.append(f' {part.title()}')
+            author_name.append(f'{part[0]}.')
+        else: author_name.append(f' {part}')
     # apoend the lastName
-    author.append(f' {all[-1]}')
-    # append the author to the others
-    names.append("".join(author))
+    if all[-1].isupper(): all[-1]=all[-1].title()
+    author_name.append(f' {all[-1]}')
+    # append the author_name to the others
+    names.append("".join(author_name))
   
   if len(names)==1:authors = f'{names[0]}'
   #joining the name of the authors, if more then 1 by and
