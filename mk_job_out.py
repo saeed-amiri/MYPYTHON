@@ -10,8 +10,8 @@ import os.path
 import time
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import concurrent.futures
+from pathlib import Path
 
 #    if os.path.exists('job.out') :
 #     # fname = 'job.out'
@@ -55,7 +55,6 @@ def get_chunks(fname):
 
 
 def make_df(fname):
-    # fname=os.path.join(src,'LOG.300')
     end, start, head, RUN, line = get_chunks(fname)
     start = [line-start[i]+1 for i in range(len(start))]
     end = [line-end[i]+1 for i in range(len(end))]
@@ -82,8 +81,6 @@ def make_df(fname):
 
 
 dirs = sys.argv[1:]
-# print(dirs)
-# dirs = [d for d in dirs if os.path.exists(os.path.join(d,'LOG.300'))]
 print(dirs)
 with concurrent.futures.ThreadPoolExecutor() as executor:
     j = executor.map(make_df, dirs)
